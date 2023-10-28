@@ -18,9 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class NewsAdapter extends ListAdapter<NewsModel,NewsAdapter.NewsViewHolder> {
+public class NewsAdapter extends ListAdapter<NewsModel.Articles,NewsAdapter.NewsViewHolder> {
 
-    public NewsAdapter(@NonNull DiffUtil.ItemCallback<NewsModel> diffCallback) {
+    public NewsAdapter(@NonNull DiffUtil.ItemCallback<NewsModel.Articles> diffCallback) {
         super(diffCallback);
     }
 
@@ -34,7 +34,7 @@ public class NewsAdapter extends ListAdapter<NewsModel,NewsAdapter.NewsViewHolde
     @Override
     public void onBindViewHolder(@NonNull NewsViewHolder holder, int position) {
 
-        NewsModel model = getItem(position);
+        NewsModel.Articles model = getItem(position);
 
         holder.txtTitle.setText(model.getTitle());
         holder.txtDesc.setText(model.getDescription());

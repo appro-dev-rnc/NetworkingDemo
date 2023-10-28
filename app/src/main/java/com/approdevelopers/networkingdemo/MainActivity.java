@@ -23,15 +23,21 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
 
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
-    private final Gson gson = new Gson();
     private NewsAdapter newsAdapter;
     private RecyclerView recyclerNews;
     private TextView txtNoNews;
@@ -39,6 +45,17 @@ public class MainActivity extends AppCompatActivity {
 
     //Okhttp instance
     private OkHttpClient client;
+    private Gson gson = new Gson();
+
+    private interface NewsInterface{
+
+        @GET("everything")
+        retrofit2.Call<NewsModel> getNewsList(@Query("q") String keyword,@Query("apiKey") String apiKey);
+
+    }
+
+    NewsInterface newsInterface;
+    Retrofit retrofit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,16 +74,25 @@ public class MainActivity extends AppCompatActivity {
         newsAdapter = new NewsAdapter(new DiffUtilsNewsModel());
 
         //initialising okhttp client
-        client = new OkHttpClient();
+        //client = new OkHttpClient();
+
+        //initialising retrofit
+        retrofit = new Retrofit.Builder()
+                .baseUrl("https://newsapi.org/v2/")
+                .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+        newsInterface= retrofit.create(NewsInterface.class);
 
 
 
-        btnFetch.setOnClickListener(view -> fetchNews());
+
+
+        btnFetch.setOnClickListener(view -> fetchNewsWithRetrofit());
     }
 
 
     // Method to fetch News JSON from news API
-    private void fetchNews(){
+    /*private void fetchNews(){
 
 
 
@@ -112,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                         if (newsResults!=null && !newsResults.isEmpty()){
                             txtNoNews.setVisibility(View.GONE);
                             recyclerNews.setVisibility(View.VISIBLE);
-                            newsAdapter.submitList(newsResults);
+                            newsAdapter.submitList();
                             recyclerNews.setAdapter(newsAdapter);
                         }
 
@@ -125,6 +151,32 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+    }
+
+     */
+
+
+    private void fetchNewsWithRetrofit(){
+
+
+
+
+        newsInterface.getNewsList("Nature","YOUR_API_KEY").enqueue(new Callback<NewsModel>() {
+            @Override
+            public void onResponse(Call<NewsModel> call, Response<NewsModel> response) {
+
+                NewsModel models = response.body();
+                txtNoNews.setVisibility(View.GONE);
+                recyclerNews.setVisibility(View.VISIBLE);
+                newsAdapter.submitList(models.getArticles());
+                recyclerNews.setAdapter(newsAdapter);
+            }
+
+            @Override
+            public void onFailure(Call<NewsModel> call, Throwable t) {
+
+            }
+        });
     }
 
 }
